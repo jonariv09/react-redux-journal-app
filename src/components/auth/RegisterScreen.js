@@ -2,13 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm';
 import validator from 'validator';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { removeError, setError } from '../../actions/ui';
+import { startRegisterWithEmailAndPassword } from '../../actions/auth';
 
 export const RegisterScreen = () => {
 
     const dispatch = useDispatch();
-    const [fieldValues, handleInputChange] = useForm({
+    const { msgError } = useSelector(state => state.ui);
+
+    const [fieldValues, handleInputChange, reset] = useForm({
         name: '',
         email: '',
         password: '',
@@ -20,18 +23,18 @@ export const RegisterScreen = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(name, email, password, password2);
-        if(!isFormValid())
-            dispatch(setError());
-        else
-            dispatch(removeError());
+        if(isFormValid()) {
+            dispatch(startRegisterWithEmailAndPassword(email, password, name));
+        }
 
+        reset();
     }
 
     const isFormValid = () => {
-        if(name.trim() === 0) {
+        if(name.trim().length === 0) {
             dispatch(setError('Name is required'))
             return false;
-        } else if(validator.isEmail(email)) {
+        } else if(!validator.isEmail(email)) {
             dispatch(setError('Email is not valid'));
             return false;
         } else if(password !== password2 || password.length < 5) {
@@ -39,16 +42,22 @@ export const RegisterScreen = () => {
             return false;
         }
 
-        dispatch(removeError());
+        dispatch(removeError());    
+        return true;
     }
 
     return (
         <>
             <h3 className="auth__title">Register</h3>
             
-            <div className="auth__alert-error">
-                Hola Mundo
-            </div>
+            {
+                msgError && 
+                (
+                    <div className="auth__alert-error">
+                        { msgError }
+                    </div>
+                )
+            }
 
             <form
                 onSubmit={handleSubmit}
