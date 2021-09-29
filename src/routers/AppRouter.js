@@ -13,6 +13,10 @@ import { onAuthStateChanged } from "firebase/auth";
 import { Auth } from '../firebase/firebase-config';
 import { useDispatch } from 'react-redux';
 import { login } from '../actions/auth';
+import { PrivateRoute } from './PrivateRoute';
+import { PublicRoute } from './PublicRoute';
+import { loadNotes } from '../helpers/loadNotes';
+import { setNotes } from '../actions/notes';
 
 export const AppRouter = () => {
 
@@ -21,11 +25,15 @@ export const AppRouter = () => {
     const [isloggedIn, setIsloggedIn] = useState(false);
 
     useEffect(() => {
-        onAuthStateChanged(Auth, (user) => {
+        onAuthStateChanged(Auth, async (user) => {
             if (user) {
                 const { uid, displayName } = user;
                 dispatch(login(uid, displayName));
                 setIsloggedIn(true);
+                
+                const notes = await loadNotes(uid);
+                dispatch(setNotes(notes));
+
             } else {
                 setIsloggedIn(false);
             }
@@ -44,19 +52,25 @@ export const AppRouter = () => {
         <Router>
             <div>
                 <Switch>
-                    <Route 
+                    {/* <Route
                         path="/auth"
                         component={ AuthRouter }
+                    /> */}
+
+                    <PublicRoute
+                        path="/auth"
+                        component={ AuthRouter }
+                        isAuthenticated={isloggedIn}
                     />
 
-                    <Route 
+                    <PrivateRoute
+                        isAuthenticated={isloggedIn}
                         exact
                         path="/"
                         component={ JournalScreen }
                     />
 
                     <Redirect to="/auth/login" />
-
 
                 </Switch>
             </div>
