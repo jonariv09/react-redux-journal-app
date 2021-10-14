@@ -1,10 +1,14 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { Database } from "../firebase/firebase-config";
 import { types } from "../types/types";
 
 export const loadNotes = async (uid) => {
 
-  const notesSnap = await getDocs(collection(Database, `${uid}/journal/notes`));
+  const notesRef = collection(Database, `${uid}/journal/notes`)
+
+  const queryNotes = query(notesRef, orderBy("date"));
+
+  const notesSnap = await getDocs(queryNotes);
   const notes = [];
 
   notesSnap.forEach((doc) => {

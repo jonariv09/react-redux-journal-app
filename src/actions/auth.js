@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword,
   signOut } from "@firebase/auth";
 import { finishLoading, startLoading } from "./ui";
+import { noteLogout } from './notes';
 
 export const startLoginEmailPassword = (email, password) => {
   return async (dispatch) => {  
@@ -60,6 +61,7 @@ export const startLogout = () => {
   return async (dispatch) => {
     await signOut(Auth);
     dispatch(logout());
+    dispatch(noteLogout());
   }
 }
 

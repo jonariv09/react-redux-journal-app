@@ -22,7 +22,6 @@ export const RegisterScreen = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(name, email, password, password2);
         if(isFormValid()) {
             dispatch(startRegisterWithEmailAndPassword(email, password, name));
         }
