@@ -23,15 +23,19 @@ export const startNewNote = () => {
 			date: new Date().getTime(),
 		};
 
-		const docRef = await addDoc(
-			collection(Database, `${uid}/journal/notes`),
-			newNote
-		);
-
-		dispatch(activeNote(docRef.id, newNote));
-		newNote.id = docRef.id;
-
-		dispatch(startAddUpdateNote(newNote));
+		try {
+			const docRef = await addDoc(
+				collection(Database, `${uid}/journal/notes`),
+				newNote
+			);
+	
+			dispatch(activeNote(docRef.id, newNote));
+			newNote.id = docRef.id;
+	
+			dispatch(startAddUpdateNote(newNote));
+		} catch(error) {
+			console.log(error);
+		}
 	};
 };
 

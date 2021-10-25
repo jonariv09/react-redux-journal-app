@@ -5,10 +5,18 @@ import {
 	startLoadingNotes,
 	startNewNote,
 	startSaveNote,
+	startUploading,
 } from "../../actions/notes";
 import { Database } from "../../firebase/firebase-config";
 import { types } from "../../types/types";
 import { doc, deleteDoc, getDoc } from "firebase/firestore";
+import { fileUpload } from "../../helpers/fileUpload";
+
+jest.mock("../../helpers/fileUpload", () => ({
+	fileUpload: jest.fn(() => {
+		return "https://hola-mundo/cosa.jpg";
+	}),
+}));
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -16,6 +24,13 @@ const mockStore = configureStore(middlewares);
 const initState = {
 	auth: {
 		uid: "TESTING",
+	},
+	notes: {
+		active: {
+			id: "14YzM5TL3W6Ogll7DgBs",
+			title: "Hola",
+			body: "Mundo",
+		},
 	},
 };
 
@@ -82,8 +97,8 @@ describe("Testing notes actions", () => {
 	test("startSaveNote should save a note", async () => {
 		const note = {
 			id: "14YzM5TL3W6Ogll7DgBs",
-			title: "titulo",
-			body: "body",
+			title: "Hola",
+			body: "mundo",
 		};
 
 		await store.dispatch(startSaveNote(note));
@@ -98,5 +113,22 @@ describe("Testing notes actions", () => {
 		const docSnap = await getDoc(docRef);
 
 		expect(docSnap.data().title).toBe(note.title);
+	});
+
+	test("startUploading debe de actualizar el url del entry", async () => {
+		const file = new File([], "foto.jpg");
+		await store.dispatch(startUploading(file));
+
+		const actions = store.getActions();
+
+		const docRef = doc(
+			Database,
+			`${initState.auth.uid}/journal/notes/`,
+			initState.notes.active.id
+		);
+		const docSnap = await getDoc(docRef);
+		const note = docSnap.data();
+
+		expect(note.url).toBe("https://hola-mundo/cosa.jpg");
 	});
 });
